@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- google analytics -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:title" content="NYC HomeBase Location Finder">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:type" content="website">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:url" content="https://maps.nyc.gov/accessible-restaurant/">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:image" content="https://maps.nyc.gov/accessible-restaurant/img/og.png">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:image:width" content="1200">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:image:height" content="626">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:description" content="NYC HomeBase Location Finder">
+	<meta prefix="og: http:/ogp.me/ns#" property="og:site_name" content="maps.nyc.gov">
+	<meta name="google-translate-customization" content="4707bd7f535893a0-45bca7b6a97e5a2d-g609df9381571b349-c">
+
+	<title>NYC HomeBase Location Finder</title>
+
+	<link rel="manifest" href="manifest.webmanifest">
+	<link rel="apple-touch-startup-image" href="img/icon-512.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="img/icon-60.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="img/icon-76.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="img/icon-120.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="img/icon-152.png">
+	<link rel="apple-touch-icon" sizes="167x167" href="img/icon-167.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png">
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.3.2/ol.css">
+	<link rel="stylesheet" href="https://maps.nyc.gov/nyc-lib/v0.5.4/css/nyc-ol-lib.css">
+	<link rel="stylesheet" href="css/nyc-finder.css">
+	<link rel="stylesheet" href="css/homebase.css">
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-mobile/1.4.5/jquery.mobile.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.3/jquery.csv.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.15/proj4.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.3.2/ol.js"></script>
+	<script src="https://maps.nyc.gov/nyc-lib/v0.5.4/js/nyc-ol-lib.js"></script>
+	<script src="https://maps.nyc.gov/nyc-lib/v0.5.4/js/nyc-finder.js"></script>
+</head>
+<body>
+	<script>
+		new nyc.Loading();
+	</script>
+	<h1 class="banner">
+		<span>homebase location finder</span>
+	</h1>
+	<div id="map"></div>
+	<script>
+		$(document).ready(function(){
+
+			new nyc.lang.Goog({
+				target: '#map',
+				languages: {
+				    en: {val: 'English', desc: 'English', hint: 'Translate'},
+				    ar: {val: 'Arabic', desc: '&#x627;&#x644;&#x639;&#x631;&#x628;&#x64A;&#x629;', hint: '&#x62A;&#x631;&#x62C;&#x645;'},
+				    bn: {val: 'Bengali', desc: '&#x9AC;&#x9BE;&#x999;&#x9BE;&#x9B2;&#x9BF;', hint: '&#x985;&#x9A8;&#x9C1;&#x9AC;&#x9BE;&#x9A6; &#x995;&#x9B0;&#x9BE;'},
+				    'zh-CN': {val: 'Chinese (Simplified)', desc: '&#x4E2D;&#x56FD;', hint: '&#x7FFB;&#x8BD1;'},
+				    fr: {val: 'French', desc: 'Fran&#231;ais', hint: 'Traduire'},
+				    ht: {val: 'Haitian Creole', desc: 'Krey&#242;l Ayisyen', hint: 'Tradui'},
+				    ko: {val: 'Korean', desc: '&#xD55C;&#xAD6D;&#xC758;', hint: '&#xBC88;&#xC5ED;'},
+				    ru: {val: 'Russian', desc: 'P&#x443;&#x441;&#x441;&#x43A;&#x438;&#x439;', hint: '&#x43F;&#x435;&#x440;&#x435;&#x432;&#x435;&#x441;&#x442;&#x438;'},
+				    es: {val: 'Spanish', desc: 'Espa&#241;ol', hint: 'Traducir'},
+				    ur: {val: 'Urdu', desc: '&#x627;&#x631;&#x62F;&#x648;', hint: '&#x62A;&#x631;&#x62C;&#x645;&#x6C1; &#x6A9;&#x631;&#x6CC;&#x6BA;'}
+				},
+				isButton: true
+			});
+
+			var map = new nyc.ol.Basemap({target: $('#map').get(0)});
+
+			var geocoder = new nyc.Geoclient(
+				'https://maps.nyc.gov/geoclient/v1/search.json?app_key=1E35D873FD57A3FF2&app_id=dhs-homebase'
+			);
+
+			var locationMgr = new nyc.LocationMgr({
+				controls: new nyc.ol.control.ZoomSearch(map),
+				locate: new nyc.ol.Locate(geocoder),
+				locator: new nyc.ol.Locator({map: map, zoom: 12})
+			});
+
+			var finderSource = new nyc.ol.source.FilteringAndSorting(
+				{loader: new nyc.ol.source.CsvPointFeatureLoader({
+					url: 'https://data.cityofnewyork.us/api/views/ntcm-2w4k/rows.csv?accessType=DOWNLOAD',
+					projection: 'EPSG:4326',
+					xCol: 'Longitude',
+					yCol: 'Latitude'
+				})}, [finderDecorations],
+				{projection: 'EPSG:3857'}
+			);
+
+			new nyc.FinderApp({
+				map: map,
+				finderSource: finderSource,
+				locationMgr: locationMgr,
+				directionsUrl: 'https://maps.googleapis.com/maps/api/js?sensor=false&libraries=visualization'
+			});
+
+			$('.z-srch input').attr('placeholder', 'Search for an address or ZIP Code...')
+
+			var finderLyr = new ol.layer.Vector({
+		    source: finderSource,
+		    style: finderStyle
+		  });
+		  map.addLayer(finderLyr);
+			new nyc.ol.FeatureTip(map, [{
+		    layer: finderLyr,
+		    labelFunction: function(){
+			    return {text: this.getName()};
+		    }
+		  }]);
+
+			if ($(window).width() <= 700){
+				setTimeout(function(){
+					$('#map-tab-btn, #map-tab-btn a').trigger('click');
+					setTimeout(function(){
+						$('#map-tab-btn, #map-tab-btn a').trigger('click');
+					}, 1000);
+				}, 200);
+			}
+		});
+	</script>
+	<script src="js/decoration.js"></script>
+	<script src="js/style.js"></script>
+</body>
+</html>
